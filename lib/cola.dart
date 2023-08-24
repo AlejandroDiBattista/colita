@@ -1,27 +1,57 @@
+import 'dart:async';
 import 'dart:core';
 import 'dart:math';
+import 'package:get/get.dart';
 
-extension DateTimeExtensions on DateTime {
-  int get segundos => DateTime.now().difference(this).inSeconds;
-}
+import 'utils.dart';
 
-class Cola {
-  int cantidad;
+class Cola extends GetxController {
+  int cantidad = 0;
   late DateTime inicio;
   List<int> marcas = [];
+  bool configurar = true;
 
-  Cola(this.cantidad) {
+  Cola() {
     inicio = DateTime.now();
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      update();
+    });
+  }
+
+  void comenzar() {
+    inicio = DateTime.now();
+    configurar = false;
+    update();
+  }
+
   void avanzar() {
-    if (esperando == 0) return;
-    marcas.add(inicio.segundos);
+    if (configurar) {
+      if (cantidad < cantidadMaxima) cantidad++;
+    } else if (esperando > 0) {
+      marcas.add(inicio.segundos);
+    }
+    update();
   }
 
   void retroceder() {
-    marcas.removeLast();
+    if (configurar) {
+      if (cantidad > 0) cantidad--;
+    } else {
+      marcas.removeLast();
+    }
+    update();
   }
+
+  bool get configurando => configurar;
 
   int get atendidos => min(cantidad, marcas.length);
   int get esperando => max(0, cantidad - atendidos);
@@ -36,11 +66,10 @@ class Cola {
 
   static const duracionMinima = 5;
   static const duracionEstimada = 30;
-
+  static const cantidadMaxima = 20;
   // Estadisticas
 
   DateTime get horaActual => DateTime.now();
-
   DateTime get horaComienzo => inicio;
   DateTime get horaFinalizacion => inicio.add(Duration(seconds: tiempoTotal));
 
@@ -56,7 +85,8 @@ class Cola {
   int get personasFaltantes => personasComienzo - personasAtendidas;
 
   static Cola crearDemo() {
-    final c = Cola(5);
+    final c = Cola();
+    c.cantidad = 5;
     c.inicio = c.inicio.subtract(const Duration(seconds: 50));
     c.avanzar();
     c.marcas.last = c.marcas.last - 40;
@@ -64,4 +94,6 @@ class Cola {
     c.marcas.last = c.marcas.last - 20;
     return c;
   }
+
+  static Cola get to => Get.find(); // add this line
 }
