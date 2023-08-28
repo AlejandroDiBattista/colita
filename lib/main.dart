@@ -57,7 +57,7 @@ class Campo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(etiqueta, style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w100)),
+          Text(etiqueta, style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w100)),
           Text(valor, style: const TextStyle(fontSize: 20, color: Colors.white)),
         ],
       ),
@@ -90,7 +90,7 @@ class EstadoCola extends StatelessWidget {
   }
 
   Widget fila(Widget a, Widget b) => Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(4.0),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [a, b]),
       );
 
