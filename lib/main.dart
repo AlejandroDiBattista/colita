@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [Reloj(c), if(!c.configurando) EstadoCola(c), Contador(c)],
+                children: [Reloj(c), if (!c.configurando) EstadoCola(c), Contador(c)],
               ),
             ),
           ),
@@ -145,7 +145,11 @@ class Contador extends StatelessWidget {
 
   Widget crearComenzar() => Padding(
         padding: const EdgeInsets.all(24.0),
-        child: FilledButton(
+        child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white.withOpacity(0.3), // Ajusta el nivel de transparencia aquí
+              padding: EdgeInsets.all(16),
+            ),
             onPressed: cola.comenzar,
             child: const Padding(
               padding: EdgeInsets.all(8.0),
