@@ -6,13 +6,17 @@ import 'package:get/get.dart';
 import 'utils.dart';
 
 class Cola extends GetxController {
-  int cantidad = 0;
-  late DateTime inicio;
-  List<int> marcas = [];
   bool configurar = true;
+
+  late DateTime inicio;
+  late DateTime actual;
+
+  int cantidad = 0;
+  List<int> marcas = [];
 
   Cola() {
     inicio = DateTime.now();
+    actual = inicio;
   }
 
   @override
@@ -23,14 +27,34 @@ class Cola extends GetxController {
 
   void _startTimer() {
     Timer.periodic(const Duration(seconds: 1), (timer) {
-      update();
+      if (configurando) {
+        update();
+      } else {
+        actualizar();
+      }
     });
+  }
+
+  void actualizar() {
+    if (configurando) return;
+    actual = DateTime.now();
+    update();
   }
 
   void comenzar() {
     inicio = DateTime.now();
     configurar = false;
-    update();
+    actualizar();
+  }
+
+  void cancelar() {
+    configurar = true;
+    actualizar();
+  }
+
+  void terminar() {
+    configurar = true;
+    actualizar();
   }
 
   void avanzar() {
@@ -39,7 +63,7 @@ class Cola extends GetxController {
     } else if (esperando > 0) {
       marcas.add(inicio.segundos);
     }
-    update();
+    actualizar();
   }
 
   void retroceder() {
@@ -48,7 +72,7 @@ class Cola extends GetxController {
     } else {
       marcas.removeLast();
     }
-    update();
+    actualizar();
   }
 
   bool get configurando => configurar;
@@ -69,7 +93,7 @@ class Cola extends GetxController {
   static const cantidadMaxima = 20;
   // Estadisticas
 
-  DateTime get horaActual => DateTime.now();
+  DateTime get horaActual => actual;
   DateTime get horaComienzo => inicio;
   DateTime get horaFinalizacion => inicio.add(Duration(seconds: tiempoTotal));
 
@@ -83,6 +107,7 @@ class Cola extends GetxController {
   int get personasAtendidas => marcas.length;
 
   int get personasFaltantes => personasComienzo - personasAtendidas;
+  bool get ejecutando => !configurando && personasFaltantes > 0;
 
   static Cola crearDemo() {
     final c = Cola();

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [Reloj(c), if (!c.configurando) EstadoCola(c), Contador(c)],
+                children: [Reloj(), if (!c.configurando) EstadoCola(c), Contador(c)],
               ),
             ),
           ),
@@ -33,14 +33,13 @@ class MyApp extends StatelessWidget {
 }
 
 class Reloj extends StatelessWidget {
-  final Cola cola;
-  const Reloj(this.cola, {super.key});
+  const Reloj({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 64),
-      child: Center(child: Text(cola.horaActual.toHora, style: const TextStyle(fontSize: 48, color: Colors.white))),
+      child: Center(child: Text(DateTime.now().toHora, style: const TextStyle(fontSize: 48, color: Colors.white))),
     );
   }
 }
@@ -48,8 +47,8 @@ class Reloj extends StatelessWidget {
 class Campo extends StatelessWidget {
   final String etiqueta;
   final String valor;
-
-  const Campo(this.etiqueta, this.valor, {super.key});
+  final bool destacar;
+  const Campo(this.etiqueta, this.valor, {this.destacar = false, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +56,12 @@ class Campo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(etiqueta, style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w100)),
-          Text(valor, style: const TextStyle(fontSize: 20, color: Colors.white)),
+          Text(etiqueta, style: const TextStyle(fontSize: 14, color: Colors.white54, fontWeight: FontWeight.w100)),
+          Text(valor,
+              style: TextStyle(
+                  fontSize: 20,
+                  color: destacar ? Colors.yellow : Colors.white,
+                  fontWeight: destacar ? FontWeight.bold : FontWeight.normal)),
         ],
       ),
     );
@@ -72,21 +75,30 @@ class EstadoCola extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = cola;
-    return Column(children: [
-      fila(
-        hora('Hora comienzo', c.horaComienzo),
-        hora('Hora finalización', c.horaFinalizacion),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 0),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(50),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(width: 1, color: Colors.white.withAlpha(10)),
       ),
-      fila(
-        intervalo('Espera promedio', c.esperaPromedio),
-        intervalo('Espera total', c.esperaTotal),
-      ),
-      fila(
-        intervalo('Tiempo atención', c.tiempoAtencion),
-        intervalo('Tiempo total', c.tiempoTotal),
-      ),
-      fila(entero('Personas al comienzo', c.personasComienzo), entero('Personas atendidas', c.personasAtendidas)),
-    ]);
+      child: Column(children: [
+        fila(
+          hora('Hora comienzo', c.horaComienzo),
+          hora('Hora finalización', c.horaFinalizacion, destacar: true),
+        ),
+        fila(
+          intervalo('Espera promedio', c.esperaPromedio),
+          intervalo('Espera total', c.esperaTotal),
+        ),
+        fila(
+          intervalo('Tiempo atención', c.tiempoAtencion, destacar: true),
+          intervalo('Tiempo total', c.tiempoTotal),
+        ),
+        fila(entero('Comenzaron con', c.personasComienzo), entero('Atendieron a', c.personasAtendidas)),
+      ]),
+    );
   }
 
   Widget fila(Widget a, Widget b) => Padding(
@@ -94,46 +106,50 @@ class EstadoCola extends StatelessWidget {
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [a, b]),
       );
 
-  Widget hora(String etiqueta, DateTime hora) => Campo(etiqueta, hora.toHora);
-  Widget intervalo(String etiqueta, int segundos) => Campo(etiqueta, segundos.toIntervalo());
-  Widget entero(String etiqueta, int cantidad) => Campo(etiqueta, cantidad.toString());
+  Widget hora(String etiqueta, DateTime hora, {bool destacar = false}) =>
+      Campo(etiqueta, hora.toHora, destacar: destacar);
+  Widget intervalo(String etiqueta, int segundos, {bool destacar = false}) =>
+      Campo(etiqueta, segundos.toIntervalo(), destacar: destacar);
+  Widget entero(String etiqueta, int cantidad, {bool destacar = false}) =>
+      Campo(etiqueta, cantidad.toString(), destacar: destacar);
 }
 
 class Contador extends StatelessWidget {
   final Cola cola;
   const Contador(this.cola, {super.key});
 
-  void sumar() {
-    cola.avanzar();
-  }
-
-  void restar() {
-    cola.retroceder();
-  }
-
-  void comenzar() {
-    cola.comenzar();
-  }
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: cola.avanzar,
       onLongPress: cola.retroceder,
-      child: Column(
-        children: [
-          const Text('¿Cuantas personas hay antes?',
-              style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.w100)),
-          Text('${cola.configurando ? cola.cantidad : cola.esperando}',
-              style: const TextStyle(fontSize: 200, color: Colors.white)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [icono(Icons.add_circle_outline, sumar), icono(Icons.remove_circle_outline, restar)],
-          ),
-          cola.configurando ? crearComenzar() : const SizedBox(height: 24)
-        ],
+      child: Center(
+        child: Column(
+          children: [
+            if (cola.configurando || cola.ejecutando) ...[
+              const Text('¿Cuantas personas hay antes?',
+                  style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.w100)),
+              Text('${cola.configurando ? cola.cantidad : cola.esperando}',
+                  style: const TextStyle(fontSize: 200, color: Colors.white)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  icono(Icons.add_circle_outline, cola.avanzar),
+                  icono(Icons.remove_circle_outline, cola.retroceder)
+                ],
+              ),
+            ],
+            crearAccion(cola)
+          ],
+        ),
       ),
     );
+  }
+
+  Widget crearAccion(Cola cola) {
+    if (cola.configurando) return crearBoton('Comenzar', cola.comenzar);
+    if (cola.ejecutando) return crearBoton('Cancelar', cola.cancelar);
+    return crearBoton('Terminar', cola.terminar);
   }
 
   Widget icono(IconData tipo, VoidCallback accion) => IconButton(
@@ -143,17 +159,16 @@ class Contador extends StatelessWidget {
         color: Colors.white,
       );
 
-  Widget crearComenzar() => Padding(
+  Widget crearBoton(String titulo, VoidCallback accion) => Padding(
         padding: const EdgeInsets.all(24.0),
-        child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
+        child: FilledButton(
+            style: FilledButton.styleFrom(
               backgroundColor: Colors.white.withOpacity(0.3), // Ajusta el nivel de transparencia aquí
-              padding: EdgeInsets.all(16),
             ),
-            onPressed: cola.comenzar,
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text("Comenzar", style: TextStyle(fontSize: 32, color: Colors.white)),
+            onPressed: accion,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(titulo, style: const TextStyle(fontSize: 32, color: Colors.white)),
             )),
       );
 }
