@@ -93,7 +93,7 @@ class EstadoCola extends StatelessWidget {
           intervalo('Espera total', c.esperaTotal),
         ),
         fila(
-          intervalo('Tiempo atención', c.tiempoAtencion, destacar: true),
+          intervalo('Tiempo atención', c.tiempoParaAtencion, destacar: true),
           intervalo('Tiempo total', c.tiempoTotal),
         ),
         fila(entero('Comenzaron con', c.personasComienzo), entero('Atendieron a', c.personasAtendidas)),

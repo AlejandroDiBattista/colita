@@ -36,9 +36,10 @@ class Cola extends GetxController {
   }
 
   void actualizar() {
-    if (configurando) return;
-    actual = DateTime.now();
     update();
+    if (configurando || completado) return;
+
+    actual = DateTime.now();
   }
 
   void comenzar() {
@@ -75,39 +76,40 @@ class Cola extends GetxController {
     actualizar();
   }
 
-  bool get configurando => configurar;
-
-  int get atendidos => min(cantidad, marcas.length);
-  int get esperando => max(0, cantidad - atendidos);
+  int get atendidos => min(cantidad, personasAtendidas);
+  int get esperando => max(0, personasFaltantes);
   int get duracionTotal => atendidos == 0 ? 0 : marcas.last;
 
   int get duracionPromedio {
-    final ahora = inicio.segundos;
-    int ajuste = ahora ~/ (atendidos + 1);
+    int ajuste = esperaTotal ~/ (atendidos + 1);
     int duracion = atendidos == 0 ? duracionMinima : duracionTotal ~/ atendidos;
     return max(duracion, ajuste);
   }
 
+  // Parámetros
   static const duracionMinima = 5;
   static const duracionEstimada = 30;
   static const cantidadMaxima = 20;
-  // Estadisticas
 
-  DateTime get horaActual => actual;
+  // Estadísticas
+
   DateTime get horaComienzo => inicio;
+  DateTime get horaActual => actual;
   DateTime get horaFinalizacion => inicio.add(Duration(seconds: tiempoTotal));
 
   int get esperaPromedio => duracionPromedio;
-  int get esperaTotal => inicio.segundos;
+  int get esperaTotal => inicio.difference(actual).inSeconds;
 
-  int get tiempoAtencion => tiempoTotal - esperaTotal;
+  int get tiempoParaAtencion => tiempoTotal - esperaTotal;
   int get tiempoTotal => duracionPromedio * cantidad;
 
   int get personasComienzo => cantidad;
   int get personasAtendidas => marcas.length;
-
   int get personasFaltantes => personasComienzo - personasAtendidas;
+
+  bool get configurando => configurar;
   bool get ejecutando => !configurando && personasFaltantes > 0;
+  bool get completado => !configurando && personasFaltantes == 0;
 
   static Cola crearDemo() {
     final c = Cola();
