@@ -2,14 +2,16 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:math';
 import 'package:get/get.dart';
-
 import 'utils.dart';
 
+enum Estados { configurando, ejecutando, mostrando }
+
 class Cola extends GetxController {
-  bool configurar = true;
+  Estados estado = Estados.configurando;
 
   late DateTime inicio;
   late DateTime actual;
+  late DateTime ultimo;
 
   int cantidad = 0;
   List<int> marcas = [];
@@ -17,17 +19,27 @@ class Cola extends GetxController {
   Cola() {
     inicio = DateTime.now();
     actual = inicio;
+    ultimo = inicio;
+    estado = Estados.configurando;
   }
+
+  Timer? _timer;
 
   @override
   void onInit() {
     super.onInit();
-    _startTimer();
+    iniciarTimer();
   }
 
-  void _startTimer() {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (configurando) {
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void iniciarTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (estado == Estados.configurando) {
         update();
       } else {
         actualizar();
@@ -36,80 +48,94 @@ class Cola extends GetxController {
   }
 
   void actualizar() {
+    switch (estado) {
+      case Estados.configurando:
+        if (ultimo.segundos > esperaEjecucion) comenzar();
+        break;
+      case Estados.ejecutando:
+        actual = DateTime.now();
+        if (personasFaltantes == 0) mostrar();
+        break;
+      case Estados.mostrando:
+        if (ultimo.segundos > esperaReiniciar) reiniciar();
+        break;
+    }
     update();
-    if (configurando || completado) return;
-
-    actual = DateTime.now();
   }
 
   void comenzar() {
+    estado = Estados.ejecutando;
     inicio = DateTime.now();
-    configurar = false;
-    actualizar();
+    tocar();
   }
 
-  void cancelar() {
-    configurar = true;
-    actualizar();
+  void mostrar() {
+    estado = Estados.mostrando;
+    tocar();
   }
 
-  void terminar() {
-    configurar = true;
-    actualizar();
+  void reiniciar() {
+    estado = Estados.configurando;
+    cantidad = 0;
+    marcas.clear();
+    tocar();
   }
 
   void avanzar() {
-    if (configurar) {
+    if (estado == Estados.configurando) {
       if (cantidad < cantidadMaxima) cantidad++;
     } else if (esperando > 0) {
       marcas.add(inicio.segundos);
     }
+    tocar();
     actualizar();
   }
 
   void retroceder() {
-    if (configurar) {
+    if (estado == Estados.configurando) {
       if (cantidad > 0) cantidad--;
     } else {
       marcas.removeLast();
     }
+    tocar();
     actualizar();
   }
 
+  void tocar() {
+    ultimo = DateTime.now();
+    update();
+  }
+
+  // Estadísticas
+
   int get atendidos => min(cantidad, personasAtendidas);
   int get esperando => max(0, personasFaltantes);
-  int get duracionTotal => atendidos == 0 ? 0 : marcas.last;
 
-  int get duracionPromedio {
-    int ajuste = esperaTotal ~/ (atendidos + 1);
+  DateTime get horaComienzo => inicio;
+  DateTime get horaActual => actual;
+  DateTime get horaFinalizacion => inicio.add(Duration(seconds: esperaTotal));
+
+  int get esperaPromedio {
+    int ajuste = esperaActual ~/ (atendidos + 1);
+    int duracionTotal = atendidos == 0 ? 0 : marcas.last;
     int duracion = atendidos == 0 ? duracionMinima : duracionTotal ~/ atendidos;
     return max(duracion, ajuste);
   }
 
-  // Parámetros
-  static const duracionMinima = 5;
-  static const duracionEstimada = 30;
-  static const cantidadMaxima = 20;
-
-  // Estadísticas
-
-  DateTime get horaComienzo => inicio;
-  DateTime get horaActual => actual;
-  DateTime get horaFinalizacion => inicio.add(Duration(seconds: tiempoTotal));
-
-  int get esperaPromedio => duracionPromedio;
-  int get esperaTotal => inicio.difference(actual).inSeconds;
-
-  int get tiempoParaAtencion => tiempoTotal - esperaTotal;
-  int get tiempoTotal => duracionPromedio * cantidad;
+  int get esperaActual => inicio.difference(actual).inSeconds;
+  int get esperaTotal => esperaPromedio * cantidad;
+  int get esperaParaAtencion => esperaTotal - esperaActual;
 
   int get personasComienzo => cantidad;
   int get personasAtendidas => marcas.length;
   int get personasFaltantes => personasComienzo - personasAtendidas;
 
-  bool get configurando => configurar;
-  bool get ejecutando => !configurando && personasFaltantes > 0;
-  bool get completado => !configurando && personasFaltantes == 0;
+// Parámetros
+  static const duracionMinima = 5;
+  static const duracionEstimada = 30;
+  static const cantidadMaxima = 20;
+  static const esperaEjecucion = 10;
+  static const esperaReiniciar = 30;
 
   static Cola crearDemo() {
     final c = Cola();
@@ -122,5 +148,5 @@ class Cola extends GetxController {
     return c;
   }
 
-  static Cola get to => Get.find(); // add this line
+  static Cola get to => Get.find();
 }

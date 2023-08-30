@@ -90,11 +90,11 @@ class EstadoCola extends StatelessWidget {
         ),
         fila(
           intervalo('Espera promedio', c.esperaPromedio),
-          intervalo('Espera total', c.esperaTotal),
+          intervalo('Espera total', c.esperaActual),
         ),
         fila(
-          intervalo('Tiempo atención', c.tiempoParaAtencion, destacar: true),
-          intervalo('Tiempo total', c.tiempoTotal),
+          intervalo('Tiempo atención', c.esperaParaAtencion, destacar: true),
+          intervalo('Tiempo total', c.esperaTotal),
         ),
         fila(entero('Comenzaron con', c.personasComienzo), entero('Atendieron a', c.personasAtendidas)),
       ]),
@@ -146,11 +146,11 @@ class Contador extends StatelessWidget {
     );
   }
 
-  Widget crearAccion(Cola cola) {
-    if (cola.configurando) return crearBoton('Comenzar', cola.comenzar);
-    if (cola.ejecutando) return crearBoton('Cancelar', cola.cancelar);
-    return crearBoton('Terminar', cola.terminar);
-  }
+  Widget crearAccion(Cola cola) => switch (cola.estado) {
+        Estados.configurando => crearBoton('Comenzar', cola.comenzar),
+        Estados.ejecutando => crearBoton('Cancelar', cola.reiniciar),
+        Estados.mostrando => crearBoton('Reiniciar', cola.reiniciar)
+      };
 
   Widget icono(IconData tipo, VoidCallback accion) => IconButton(
         onPressed: accion,
