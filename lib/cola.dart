@@ -38,32 +38,36 @@ class Cola extends GetxController {
   }
 
   void iniciarTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (estado == Estados.configurando) {
-        update();
-      } else {
-        actualizar();
-      }
-    });
+    _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) => actualizarEstado());
   }
 
-  void actualizar() {
-    switch (estado) {
-      case Estados.configurando:
-        if (ultimo.segundos > esperaEjecucion) comenzar();
-        break;
-      case Estados.ejecutando:
-        actual = DateTime.now();
-        if (personasFaltantes == 0) mostrar();
-        break;
-      case Estados.mostrando:
-        if (ultimo.segundos > esperaReiniciar) reiniciar();
-        break;
+  void actualizarEstado() {
+    print('Último: ${ultimo.segundos}');
+
+    if (estado == Estados.configurando) {
+      if (ultimo.segundos >= esperaEjecucion && cantidad >= cantidadMinima) ejecutar();
     }
+
+    if (estado == Estados.ejecutando) {
+      actual = DateTime.now();
+      if (personasFaltantes == 0) mostrar();
+    }
+
+    if (estado == Estados.mostrando) {
+      if (ultimo.segundos >= esperaReiniciar) comenzar();
+    }
+
     update();
   }
 
   void comenzar() {
+    estado = Estados.configurando;
+    cantidad = 0;
+    marcas.clear();
+    tocar();
+  }
+
+  void ejecutar() {
     estado = Estados.ejecutando;
     inicio = DateTime.now();
     tocar();
@@ -74,31 +78,28 @@ class Cola extends GetxController {
     tocar();
   }
 
-  void reiniciar() {
-    estado = Estados.configurando;
-    cantidad = 0;
-    marcas.clear();
-    tocar();
-  }
-
   void avanzar() {
     if (estado == Estados.configurando) {
       if (cantidad < cantidadMaxima) cantidad++;
-    } else if (esperando > 0) {
+    }
+
+    if (estado == Estados.ejecutando) {
       marcas.add(inicio.segundos);
     }
+
     tocar();
-    actualizar();
   }
 
   void retroceder() {
     if (estado == Estados.configurando) {
       if (cantidad > 0) cantidad--;
-    } else {
-      marcas.removeLast();
     }
+
+    if (estado == Estados.ejecutando) {
+      if (marcas.isNotEmpty) marcas.removeLast();
+    }
+
     tocar();
-    actualizar();
   }
 
   void tocar() {
@@ -113,40 +114,35 @@ class Cola extends GetxController {
 
   DateTime get horaComienzo => inicio;
   DateTime get horaActual => actual;
+  DateTime get horaUltimo => marcas.isEmpty ? inicio : inicio.add(Duration(seconds: marcas.last));
   DateTime get horaFinalizacion => inicio.add(Duration(seconds: esperaTotal));
 
   int get esperaPromedio {
-    int ajuste = esperaActual ~/ (atendidos + 1);
-    int duracionTotal = atendidos == 0 ? 0 : marcas.last;
-    int duracion = atendidos == 0 ? duracionMinima : duracionTotal ~/ atendidos;
-    return max(duracion, ajuste);
+    int estimada = esperaActual ~/ (atendidos + 1);
+    int espera = atendidos == 0 ? duracionMinima : marcas.last ~/ atendidos;
+    return max(espera, estimada);
   }
 
-  int get esperaActual => inicio.difference(actual).inSeconds;
-  int get esperaTotal => esperaPromedio * cantidad;
-  int get esperaParaAtencion => esperaTotal - esperaActual;
+  int get esperaActual => actual.difference(inicio).inSeconds;
+  int get esperaTotal => max((marcas.isEmpty ? 0 : marcas.last)+ esperaPromedio, esperaActual) + esperaPromedio * (esperando - 1);
+  int get esperaAtencion => esperaTotal - esperaActual;
+  int get esperaExcedida => actual.segundos;
 
   int get personasComienzo => cantidad;
   int get personasAtendidas => marcas.length;
   int get personasFaltantes => personasComienzo - personasAtendidas;
+  int get personas => estado == Estados.configurando ? personasComienzo : personasFaltantes;
 
 // Parámetros
+
   static const duracionMinima = 5;
   static const duracionEstimada = 30;
-  static const cantidadMaxima = 20;
-  static const esperaEjecucion = 10;
-  static const esperaReiniciar = 30;
 
-  static Cola crearDemo() {
-    final c = Cola();
-    c.cantidad = 5;
-    c.inicio = c.inicio.subtract(const Duration(seconds: 50));
-    c.avanzar();
-    c.marcas.last = c.marcas.last - 40;
-    c.avanzar();
-    c.marcas.last = c.marcas.last - 20;
-    return c;
-  }
+  static const cantidadMinima = 2;
+  static const cantidadMaxima = 20;
+
+  static const esperaEjecucion = 5; // 10
+  static const esperaReiniciar = 30; // esperaPromedio x 2
 
   static Cola get to => Get.find();
 }

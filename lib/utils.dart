@@ -1,6 +1,7 @@
 extension DateTimeExtensions on DateTime {
   int get segundos => DateTime.now().difference(this).inSeconds;
   String get toHora => '${hour.twoDigits()}:${minute.twoDigits()}:${second.twoDigits()}';
+  String get toHoraCompleta => '${hour.twoDigits()}:${minute.twoDigits()}:${second.twoDigits()}.${microsecond ~/ 100}';
 }
 
 extension IntExtensions on int {
