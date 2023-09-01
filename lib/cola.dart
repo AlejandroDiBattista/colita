@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:core';
 import 'dart:math';
-import 'package:get/get.dart';
 import 'utils.dart';
+import 'package:get/get.dart';
 
 enum Estados { configurando, ejecutando, mostrando }
 
@@ -38,22 +38,22 @@ class Cola extends GetxController {
   }
 
   void iniciarTimer() {
-    _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) => actualizarEstado());
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) => actualizarEstado());
   }
 
   void actualizarEstado() {
     print('Último: ${ultimo.segundos}');
 
-    if (estado == Estados.configurando) {
+    if (configurando) {
       if (ultimo.segundos >= esperaEjecucion && cantidad >= cantidadMinima) ejecutar();
     }
 
-    if (estado == Estados.ejecutando) {
+    if (ejecutando) {
       actual = DateTime.now();
       if (personasFaltantes == 0) mostrar();
     }
 
-    if (estado == Estados.mostrando) {
+    if (mostrando) {
       if (ultimo.segundos >= esperaReiniciar) comenzar();
     }
 
@@ -62,12 +62,13 @@ class Cola extends GetxController {
 
   void comenzar() {
     estado = Estados.configurando;
-    cantidad = 0;
+    cantidad = 1;
     marcas.clear();
     tocar();
   }
 
   void ejecutar() {
+    if (cantidad < cantidadMinima) return;
     estado = Estados.ejecutando;
     inicio = DateTime.now();
     tocar();
@@ -79,11 +80,11 @@ class Cola extends GetxController {
   }
 
   void avanzar() {
-    if (estado == Estados.configurando) {
+    if (configurando) {
       if (cantidad < cantidadMaxima) cantidad++;
     }
 
-    if (estado == Estados.ejecutando) {
+    if (ejecutando) {
       marcas.add(inicio.segundos);
     }
 
@@ -91,11 +92,11 @@ class Cola extends GetxController {
   }
 
   void retroceder() {
-    if (estado == Estados.configurando) {
+    if (configurando) {
       if (cantidad > 0) cantidad--;
     }
 
-    if (estado == Estados.ejecutando) {
+    if (ejecutando) {
       if (marcas.isNotEmpty) marcas.removeLast();
     }
 
@@ -107,8 +108,12 @@ class Cola extends GetxController {
     update();
   }
 
-  // Estadísticas
+  // Estados
+  bool get configurando => estado == Estados.configurando;
+  bool get ejecutando => estado == Estados.ejecutando;
+  bool get mostrando => estado == Estados.mostrando;
 
+  // Estadísticas
   int get atendidos => min(cantidad, personasAtendidas);
   int get esperando => max(0, personasFaltantes);
 
@@ -124,14 +129,15 @@ class Cola extends GetxController {
   }
 
   int get esperaActual => actual.difference(inicio).inSeconds;
-  int get esperaTotal => max((marcas.isEmpty ? 0 : marcas.last)+ esperaPromedio, esperaActual) + esperaPromedio * (esperando - 1);
+  int get esperaTotal =>
+      max((marcas.isEmpty ? 0 : marcas.last) + esperaPromedio, esperaActual) + esperaPromedio * (esperando - 1);
   int get esperaAtencion => esperaTotal - esperaActual;
   int get esperaExcedida => actual.segundos;
 
   int get personasComienzo => cantidad;
   int get personasAtendidas => marcas.length;
   int get personasFaltantes => personasComienzo - personasAtendidas;
-  int get personas => estado == Estados.configurando ? personasComienzo : personasFaltantes;
+  int get personas => configurando ? personasComienzo : personasFaltantes;
 
 // Parámetros
 
@@ -141,8 +147,8 @@ class Cola extends GetxController {
   static const cantidadMinima = 2;
   static const cantidadMaxima = 20;
 
-  static const esperaEjecucion = 5; // 10
-  static const esperaReiniciar = 30; // esperaPromedio x 2
+  static const esperaEjecucion = 3; // 10
+  static const esperaReiniciar = 12; // esperaPromedio x 2
 
   static Cola get to => Get.find();
 }
