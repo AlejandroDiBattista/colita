@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'utils.dart';
 
-import 'cola.dart';
+import 'utils.dart';
+import 'cantidad.dart';
 import 'icono.dart';
+import 'cola.dart';
 
 class Contador extends StatelessWidget {
   final Cola cola;
@@ -10,6 +11,7 @@ class Contador extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var estilo = TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.w100, shadows: [crearSombra()]);
     return InkWell(
       onTap: cola.avanzar,
       onLongPress: cola.retroceder,
@@ -19,11 +21,9 @@ class Contador extends StatelessWidget {
             if (!cola.mostrando) ...[
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
-                child: Text('¿Cuantas personas hay antes?',
-                    style: TextStyle(
-                        fontSize: 24, color: Colors.white, fontWeight: FontWeight.w100, shadows: [crearSombra()])),
+                child: Text('¿Cuantas personas hay antes?', style: estilo),
               ),
-              Text('${cola.personas}', style: const TextStyle(fontSize: 180, color: Colors.white)),
+              Cantidad(cola),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

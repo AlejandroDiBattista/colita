@@ -1,9 +1,8 @@
-import 'utils.dart';
-import 'cola.dart';
-
-import 'campo.dart';
-
 import 'package:flutter/material.dart';
+
+import 'utils.dart';
+import 'campo.dart';
+import 'cola.dart';
 
 class EstadoCola extends StatelessWidget {
   final Cola cola;

@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:core';
 import 'dart:math';
-import 'utils.dart';
 import 'package:get/get.dart';
+
+import 'utils.dart';
 
 enum Estados { configurando, ejecutando, mostrando }
 
@@ -41,25 +42,6 @@ class Cola extends GetxController {
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) => actualizarEstado());
   }
 
-  void actualizarEstado() {
-    print('Último: ${ultimo.segundos}');
-
-    if (configurando) {
-      if (ultimo.segundos >= esperaEjecucion && cantidad >= cantidadMinima) ejecutar();
-    }
-
-    if (ejecutando) {
-      actual = DateTime.now();
-      if (personasFaltantes == 0) mostrar();
-    }
-
-    if (mostrando) {
-      if (ultimo.segundos >= esperaReiniciar) comenzar();
-    }
-
-    update();
-  }
-
   void comenzar() {
     estado = Estados.configurando;
     cantidad = 1;
@@ -69,6 +51,7 @@ class Cola extends GetxController {
 
   void ejecutar() {
     if (cantidad < cantidadMinima) return;
+
     estado = Estados.ejecutando;
     inicio = DateTime.now();
     tocar();
@@ -84,9 +67,7 @@ class Cola extends GetxController {
       if (cantidad < cantidadMaxima) cantidad++;
     }
 
-    if (ejecutando) {
-      marcas.add(inicio.segundos);
-    }
+    if (ejecutando) marcas.add(inicio.segundos);
 
     tocar();
   }
@@ -105,6 +86,23 @@ class Cola extends GetxController {
 
   void tocar() {
     ultimo = DateTime.now();
+    update();
+  }
+
+  void actualizarEstado() {
+    if (configurando) {
+      if (ultimo.segundos >= esperaEjecucion && cantidad >= cantidadMinima) ejecutar();
+    }
+
+    if (ejecutando) {
+      actual = DateTime.now();
+      if (personasFaltantes == 0) mostrar();
+    }
+
+    if (mostrando) {
+      if (ultimo.segundos >= esperaReiniciar) comenzar();
+    }
+
     update();
   }
 
@@ -133,11 +131,13 @@ class Cola extends GetxController {
       max((marcas.isEmpty ? 0 : marcas.last) + esperaPromedio, esperaActual) + esperaPromedio * (esperando - 1);
   int get esperaAtencion => esperaTotal - esperaActual;
   int get esperaExcedida => actual.segundos;
+  int get esperaSalida => (cantidad + 1) * esperaPromedio;
 
   int get personasComienzo => cantidad;
   int get personasAtendidas => marcas.length;
   int get personasFaltantes => personasComienzo - personasAtendidas;
   int get personas => configurando ? personasComienzo : personasFaltantes;
+  int get espera => ejecutando ? esperaAtencion : esperaTotal;
 
 // Parámetros
 

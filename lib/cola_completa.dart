@@ -14,28 +14,16 @@ class ColaCompleta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Cola cola = Get.find();
     return GetBuilder<Cola>(
-      init: Cola(),
-      builder: (cola) => Center(
-        child: Container(
-          decoration: crearFondo(),
-          child: MaxiCola(cola: cola),
-        ),
-      ),
-    );
-  }
-}
-
-class MaxiCola extends StatelessWidget {
-  final Cola cola;
-  const MaxiCola({required this.cola, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Reloj(), EstadoCola(cola), Contador(cola), Accion(cola)],
-    );
+        init: cola,
+        builder: (cola) => Center(
+            child: Container(
+                decoration: crearFondo(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [Reloj(), EstadoCola(cola), Contador(cola), Accion(cola)],
+                ))));
   }
 }
