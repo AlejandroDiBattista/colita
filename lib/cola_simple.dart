@@ -1,3 +1,4 @@
+import 'package:colita/circular.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -31,12 +32,20 @@ class ColaSimple extends StatelessWidget {
       child: Center(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Cantidad(cola), crearTiempo(cola), Linea(cola), crearCompartir(cola)],
+        children: [
+          if (cola.mostrando) const Spacer(),
+          Cantidad(cola),
+          crearTiempo(cola),
+          Linea(cola),
+          if (cola.mostrando) const Spacer(),
+          crearCompartir(cola),
+          Circular(DateTime.now())
+        ],
       )));
 
   Widget crearCompartir(Cola cola) {
     if (!cola.mostrando) return Container();
-    return Boton('Compartir' , () => enviarWhatapp(cola));
+    return Boton('Compartir', () => enviarWhatapp(cola));
   }
 
   Widget crearTiempo(Cola cola) {

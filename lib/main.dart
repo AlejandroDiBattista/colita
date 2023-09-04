@@ -16,7 +16,11 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Cola de espera',
       debugShowCheckedModeBanner: false,
-      home: Scaffold(body: PageView(children: const [ColaCompleta(), ColaSimple()])),
+      home: Scaffold(
+          body: PageView(children: const [
+        ColaSimple(),
+        ColaCompleta(),
+      ])),
     );
   }
 }
