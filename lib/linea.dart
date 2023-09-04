@@ -22,11 +22,11 @@ class LineAndDotsPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    tiempoActual(canvas, size);
     barraFondo(canvas, size);
     marcaEstimaciones(canvas, size);
     marcarTiempo(canvas, size);
     marcaMedicion(canvas, size);
+    tiempoActual(canvas, size);
   }
 
   void barraFondo(Canvas canvas, Size size) {
@@ -87,7 +87,7 @@ class LineAndDotsPainter extends CustomPainter {
     if (cola.configurando) return;
 
     final actual = Paint()
-      ..color = Colors.black.withAlpha(200)
+      ..color = Colors.red
       ..isAntiAlias = true
       ..style = PaintingStyle.fill;
     canvas.drawCircle(pos(size, cola.esperaActual, 0), 5.0, actual);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 extension DateTimeExtensions on DateTime {
   int get segundos => DateTime.now().difference(this).inSeconds;
+  String get toDia => '${day.twoDigits()}/${month.twoDigits()}/${year.toString()}';
   String get toHora => '${hour.twoDigits()}:${minute.twoDigits()}:${second.twoDigits()}';
   String get toHoraCompleta => '${hour.twoDigits()}:${minute.twoDigits()}:${second.twoDigits()}.${microsecond ~/ 100}';
 }
