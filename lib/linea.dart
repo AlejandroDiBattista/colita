@@ -32,7 +32,7 @@ class LineAndDotsPainter extends CustomPainter {
   void barraFondo(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.white24
-      ..strokeWidth = 10.0
+      ..strokeWidth = 20.0
       ..strokeCap = StrokeCap.round;
 
     canvas.drawLine(pos(size, 0, 0), pos(size, cola.esperaSalida, 0), paint);
