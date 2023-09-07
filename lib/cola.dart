@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:math';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils.dart';
 
@@ -151,4 +152,24 @@ class Cola extends GetxController {
   static const esperaReiniciar = 12; // esperaPromedio x 2
 
   static Cola get to => Get.find();
+
+  void guardar() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('estado', estado.index);
+    prefs.setInt('cantidad', cantidad);
+    prefs.setStringList('marcas', marcas.map((e) => e.toString()).toList());
+    prefs.setString('inicio', inicio.toIso8601String());
+    prefs.setString('actual', actual.toIso8601String());
+    prefs.setString('ultimo', ultimo.toIso8601String());
+  }
+
+  void leer() async {
+    final prefs = await SharedPreferences.getInstance();
+    estado = Estados.values[prefs.getInt('estado') ?? 0];
+    cantidad = prefs.getInt('cantidad') ?? 0;
+    marcas = prefs.getStringList('marcas')?.map((e) => int.parse(e)).toList() ?? [];
+    inicio = DateTime.parse(prefs.getString('inicio') ?? '1970-01-01T00:00:00Z');
+    actual = DateTime.parse(prefs.getString('actual') ?? '1970-01-01T00:00:00Z');
+    ultimo = DateTime.parse(prefs.getString('ultimo') ?? '1970-01-01T00:00:00Z');
+  }
 }
