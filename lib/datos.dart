@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class Turno extends GetxController {
@@ -14,6 +15,12 @@ class Turno extends GetxController {
   double get dia => desde.day.toDouble();
   @override
   String toString() => 'Turno($quien, $horaInicio a $horaFinal)';
+
+  void ubicar(Offset posicion) {
+    desde = desde.copyWith(day: posicion.dx.toInt(), hour: posicion.dy.toInt());
+    print("ubicar: $posicion");
+    update();
+  }
 
   factory Turno.desdeHoraDuracion(String quien, int dia, int hora, int duracion) => Turno(
         quien,
