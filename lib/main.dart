@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'cola_completa.dart';
-import 'cola_simple.dart';
+// import 'cola_completa.dart';
+// import 'cola_simple.dart';
 import 'calendario.dart';
 
 import 'datos.dart';
@@ -22,15 +22,16 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: SafeArea(
         child: Scaffold(
-            body: PageView(children: [
+            body:
+            //  PageView(children: [
           GestureDetector(
             child: Calendario(size),
             onPanStart: (d) {
-              final f = d.globalPosition;
+              final f = d.localPosition;
               print('star: $d > ${size.fromPoint(f.dx, f.dy)}');
             },
             onPanUpdate: (d) {
-              final f = d.globalPosition;
+              final f = d.localPosition;
               print('update: $d > ${size.fromPoint(f.dx, f.dy)}');
               turno.ubicar(size.fromPoint(f.dx, f.dy));
             },
@@ -38,9 +39,10 @@ class MyApp extends StatelessWidget {
               print('end: $d.');
             },
           ),
-          const ColaSimple(),
-          const ColaCompleta(),
-        ])),
+        //   const ColaSimple(),
+        //   const ColaCompleta(),
+        // ])
+        ),
       ),
     );
   }
