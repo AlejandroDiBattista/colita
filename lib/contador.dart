@@ -11,7 +11,7 @@ class Contador extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var estilo = TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.w100, shadows: [crearSombra()]);
+    var estilo = TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.w100, shadows: [crearSombra()]);
     return InkWell(
       onTap: cola.avanzar,
       onLongPress: cola.retroceder,

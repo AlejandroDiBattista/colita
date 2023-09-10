@@ -10,7 +10,7 @@ class Icono extends StatelessWidget {
   Widget build(BuildContext context) => IconButton(
         onPressed: accion,
         icon: Icon(tipo),
-        iconSize: 80,
+        iconSize: 64,
         color: Colors.white60,
       );
 }

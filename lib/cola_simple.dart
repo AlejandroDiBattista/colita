@@ -39,7 +39,7 @@ class ColaSimple extends StatelessWidget {
           Linea(cola),
           if (cola.mostrando) const Spacer(),
           crearCompartir(cola),
-          Circular(DateTime.now())
+          //Circular(DateTime.now())
         ],
       )));
 
