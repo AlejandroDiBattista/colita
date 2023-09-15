@@ -30,6 +30,7 @@ class Cola extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    leer();
     iniciarTimer();
   }
 
@@ -48,6 +49,7 @@ class Cola extends GetxController {
     cantidad = 1;
     marcas.clear();
     tocar();
+    guardar();
   }
 
   void ejecutar() {
@@ -56,6 +58,7 @@ class Cola extends GetxController {
     estado = Estados.ejecutando;
     inicio = DateTime.now();
     tocar();
+    guardar();
   }
 
   void mostrar() {
@@ -71,6 +74,7 @@ class Cola extends GetxController {
     if (ejecutando) marcas.add(inicio.segundos);
 
     tocar();
+    guardar();
   }
 
   void retroceder() {
@@ -83,6 +87,7 @@ class Cola extends GetxController {
     }
 
     tocar();
+    guardar();
   }
 
   void tocar() {
@@ -146,7 +151,7 @@ class Cola extends GetxController {
   static const duracionEstimada = 30;
 
   static const cantidadMinima = 2;
-  static const cantidadMaxima = 20;
+  static const cantidadMaxima = 50;
 
   static const esperaEjecucion = 3; // 10
   static const esperaReiniciar = 12; // esperaPromedio x 2
@@ -154,6 +159,7 @@ class Cola extends GetxController {
   static Cola get to => Get.find();
 
   void guardar() async {
+    print("Comenzando guardar... $cantidad");
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('estado', estado.index);
     prefs.setInt('cantidad', cantidad);
@@ -161,15 +167,19 @@ class Cola extends GetxController {
     prefs.setString('inicio', inicio.toIso8601String());
     prefs.setString('actual', actual.toIso8601String());
     prefs.setString('ultimo', ultimo.toIso8601String());
+    print("guardando... $cantidad");
   }
 
   void leer() async {
     final prefs = await SharedPreferences.getInstance();
+    if (prefs.getInt('estado') == null) return;
+
     estado = Estados.values[prefs.getInt('estado') ?? 0];
     cantidad = prefs.getInt('cantidad') ?? 0;
     marcas = prefs.getStringList('marcas')?.map((e) => int.parse(e)).toList() ?? [];
     inicio = DateTime.parse(prefs.getString('inicio') ?? '1970-01-01T00:00:00Z');
     actual = DateTime.parse(prefs.getString('actual') ?? '1970-01-01T00:00:00Z');
     ultimo = DateTime.parse(prefs.getString('ultimo') ?? '1970-01-01T00:00:00Z');
+    print("Leyendo $cantidad");
   }
 }
